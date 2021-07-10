@@ -1,12 +1,13 @@
 from __future__ import print_function, unicode_literals
-from PyInquirer import Validator, ValidationError, style_from_dict, Token, prompt, print_json, Separator
+from PyInquirer import Validator, ValidationError, prompt
 from dotenv import load_dotenv
+from commandStyle import style
 
 import sys
 import os
 import requests
 import json
-
+import argparse
 from requests.api import head
 
 load_dotenv()
@@ -19,21 +20,21 @@ load_dotenv()
 # TODO : TESTING
 
 
-# * Printing style for the questions
-style = style_from_dict({
-    Token.Separator: '#00FF00',
-    Token.QuestionMark: '#E91E63 bold',
-    Token.Selected: '#673AB7 bold',
-    Token.Instruction: '',  # default
-    Token.Answer: '#2196f3 bold',
-    Token.Question: '',
 
-})
+
+
+folderName = str(sys.argv[1])
+
+print(folderName)
+
+
+# TODO: move style & questions to specifc file
+# * Printing style for the questions
+
 
 # *  Check:
 # *      If the git ignore file exists in the templates
-# *      That only one gitignore file selected
-
+# *      By sending request to the api
 class GitIgnoreValidator(Validator):
     def validate(self, document):
         if document.text != "":
@@ -48,9 +49,6 @@ class GitIgnoreValidator(Validator):
                 raise ValidationError(
                     message='Please enter a valide language name. To see all valide names: https://api.github.com/gitignore/templates ',
                     cursor_position=len(document.text))  # Move cursor to end
-        
-
-folderName = str(sys.argv[1])
 
 questions = [
     {
@@ -105,6 +103,7 @@ questions = [
     #     'when': lambda answers: answers.get('gitMethod') == 'remote'
     # }
 ]
+
 answers = prompt(questions, style=style)
 
 # Create repo on github
@@ -138,13 +137,13 @@ else:
         "auto_init": answers["readme"]
     }
 
-r = requests.post(query_url, headers=headers, data=json.dumps(data))
-rsp = r.json()
-print(rsp)
-git_url = rsp["clone_url"]
-commands = [f'git clone {git_url}']
-for c in commands:
-    os.system(c)
+# r = requests.post(query_url, headers=headers, data=json.dumps(data))
+# rsp = r.json()
+# # print(rsp)
+# git_url = rsp["clone_url"]
+# commands = [f'git clone {git_url}']
+# for c in commands:
+#     os.system(c)
 
 # else:
 #     data = {
