@@ -1,8 +1,9 @@
 from __future__ import print_function, unicode_literals
+from logging import fatal
 from PyInquirer import Validator, ValidationError, prompt
 from dotenv import load_dotenv
 from commandStyle import style
-from colorama import Fore, Back, Style,init
+from colorama import Fore, Back, Style, init
 
 import ast
 import sys
@@ -15,10 +16,10 @@ from requests.api import head
 load_dotenv()
 init()
 # TODO : Comments and ReadME
+# TODO : use the new profiles system in creating    
 # TODO : Clean code
 # TODO : Add help
 # TODO : read path from .env in bat
-
 
 
 # *  Question validator:
@@ -57,12 +58,12 @@ class profileNameValidator(Validator):
 
 # Questions to ask
 
-
+# * Profiles managment
 def createProfile():
     profileQuestions = [
         {
             'type': 'input',
-            'name': 'pname',
+            'name': 'name',
             'message': 'Profile name?',
             'validate': profileNameValidator
         },
@@ -108,28 +109,88 @@ def createProfile():
     print(Fore.CYAN + 'NOTES: -if the answer is empty the question will be asked when using the profile\n       -if wrong answer, the answer will be empty')
     print(Style.RESET_ALL)
 
-    # profileName = str(sys.argv[2])
     answers = prompt(profileQuestions, style=style)
 
     # * Recap of the answers
     print(Fore.CYAN +
-          f'\n-------------------------\n {answers["pname"]} progfile recap:\n {answers}\n-------------------------\n')
+          f'\n-------------------------\n {answers["name"]} progfile recap:\n {answers}\n-------------------------\n')
     print(Style.RESET_ALL)
 
     # * Save to file
     if answers != {}:
         pf = os.getenv("PROFILES_STORAGE")
-        with open(os.path.join(str(pf), answers["pname"]+".txt"), 'x') as f:
-            f.write(str(answers))
+        profiles = {}
+
+        # * Read the profiles to check if the name already exists
+        with open(pf, 'r') as f:
+            profiles = json.load(f)
+            # profiles = jasonFile["profiles"]
             f.close()
+
+        for p in profiles["profiles"]:
+            if p["name"] == answers["name"]:
+                print(Fore.RED + 'This profile name already exists')
+                print(Style.RESET_ALL)
+                exit(0)
+
+        # * Savet the new profile
+        profiles["profiles"].append(answers)
+        with open(pf, 'w') as f:
+            f.seek(0)
+            json.dump(profiles, f, indent=4)
+            f.close()
+
     print(Fore.GREEN + f'Profile created')
     print(Style.RESET_ALL)
 
-# * Argument managment
 
+def listProfiles():
+    pf = os.getenv("PROFILES_STORAGE")
+    # * Read the profiles to check if the name already exists
+    profiles = {}
+    with open(pf, 'r') as f:
+        profiles = json.load(f)
+        f.close()
+
+    if len(profiles["profiles"]) < 1:
+        print(Fore.RED+'No profiles created')
+        print(Style.RESET_ALL)
+    else:
+        print("\n")
+        for p in profiles["profiles"]:
+            print(Fore.YELLOW + f'{p}\n')
+            print(Style.RESET_ALL)
+
+    
+def deleteProfile(profile):
+    pf = os.getenv("PROFILES_STORAGE")
+    # * Read the profiles to check if the name already exists
+    profiles = {}
+    with open(pf, 'r') as f:
+        profiles = json.load(f)
+        f.close()
+
+    deleted = False
+    for i in range(len(profiles["profiles"])):
+        if profiles["profiles"][i]["name"] == profile:
+            profiles["profiles"].pop(i)
+            deleted = True
+            break
+    if deleted:
+        with open(pf, 'w') as f:
+            f.seek(0)
+            json.dump(profiles, f, indent=4)
+            f.close()
+        print(Fore.YELLOW+f'Profile deleted')
+        print(Style.RESET_ALL)
+
+    else:
+        print(Fore.YELLOW+f'The profile dosen\'t exist ')
+        print(Style.RESET_ALL)
+    
 
 def manageProfiles():
-    l = ["Create", "list", "Open", "Delete", "Cancel"]
+    l = ["Create", "list", "Delete", "Cancel"]
     while True:
         profileQuestions = [
             {
@@ -140,42 +201,13 @@ def manageProfiles():
             }
         ]
         answers = prompt(profileQuestions, style=style)
-        pf = os.getenv("PROFILES_STORAGE")
         if answers['choice'] == l[0]:
             createProfile()
 
         elif answers['choice'] == l[1]:
-            pl = []
-            for f in os.listdir(pf):
-                pl.append(f.split(".txt")[0])
-
-            if len(pl) > 0:
-                print(Fore.YELLOW + "Profiles list:")
-                for p in pl:
-                    print(f'  - {p}')
-
-            else:
-                print(Fore.RED+'No profiles created')
-            print(Style.RESET_ALL)
+            listProfiles()
 
         elif answers['choice'] == l[2]:
-            question = [
-                {
-                    'type': 'input',
-                    'name': 'popen',
-                    'message': 'Enter the profile name to open ? (empty to cancel)'
-                }
-            ]
-            answer = prompt(question, style=style)
-            if answer["popen"] != "":
-                if os.path.exists(os.path.join(pf, answer["popen"] + ".txt")):
-                    f = open(os.path.join(pf, answer["popen"] + ".txt"), "r")
-                    print(Fore.YELLOW + f'{f.read()} ')
-                    print(Style.RESET_ALL)
-                else:
-                    print(Fore.YELLOW+f'The profile dosen\'t exist ')
-                    print(Style.RESET_ALL)
-        elif answers['choice'] == l[3]:
             question = [
                 {
                     'type': 'input',
@@ -185,15 +217,10 @@ def manageProfiles():
             ]
             answer = prompt(question, style=style)
             if answer["pdelete"] != "":
-                if os.path.exists(os.path.join(pf, answer["pdelete"] + ".txt")):
-                    os.remove(os.path.join(pf, answer["pdelete"] + ".txt"))
-                    print(Fore.YELLOW+f'{answer["pdelete"]} profile deleted')
-                    print(Style.RESET_ALL)
-                else:
-                    print(Fore.YELLOW+f'The profile dosen\'t exist ')
-                    print(Style.RESET_ALL)
+                deleteProfile(answer["pdelete"] )
         else:
             exit(0)
+
 
 def chekRepoName(rName):
     if os.path.exists(rName):
@@ -205,13 +232,12 @@ def chekRepoName(rName):
     headers = {'Authorization': f'token {token}'}
     r = requests.get(query_url, headers=headers)
     rsp = r.json()
-    
+
     for r in rsp:
         if rName == r['name']:
             print(Fore.RED + "Error: repo name already exist on GIT")
             print(Style.RESET_ALL)
             exit(0)
-
 
 
 parser = argparse.ArgumentParser()
@@ -224,11 +250,11 @@ parser.add_argument(
 parser.add_argument(
     "-n", "--new",
     dest='new',
-    help="Create new repo (local & github) [repo_name]" ,type=str)
+    help="Create new repo (local & github) [repo_name]", type=str)
 
 parser.add_argument(
     "-p", "--profile",
-    help="Use a profile params to create the repo [profile_name]" )
+    help="Use a profile params to create the repo [profile_name]")
 
 args = parser.parse_args()
 
@@ -243,70 +269,78 @@ if args.new:
     folderName = str(sys.argv[2])
     chekRepoName(folderName)
 
-    profile = False
-
+    profileExist = False
+    
     questions = [
-            {
-                'type': 'confirm',
-                'name': 'private',
-                'message': 'Private repo?[default value: NO]',
-                'default': False
-            },
-            {
-                'type': 'confirm',
-                'name': 'readme',
-                'message': 'Add ReadMe.md?[default value: Yes]',
-                'default': True
-            },
-            {
-                'type': 'confirm',
-                'name': 'issues',
-                'message': 'Allows issues?[default value: NO]',
-                'default': False
-            },
-            {
-                'type': 'confirm',
-                'name': 'wiki',
-                'message': 'Has wiki?[default value: NO]',
-                'default': False
-            },
-            {
-                'type': 'confirm',
-                'name': 'gitignore',
-                'message': 'Add git ignore template?[default value: NO]',
-                'default': False
-            },
-            {
-                'type': 'input',
-                'name': 'gitignoreLanguage',
-                'message': 'Which language? Empty: no gitignore',
-                'validate': GitIgnoreValidator,
-                'when': lambda answers: answers.get('gitignore', True)
-            }
-        ]
+        {
+            'type': 'confirm',
+            'name': 'private',
+            'message': 'Private repo?[default value: NO]',
+            'default': False
+        },
+        {
+            'type': 'confirm',
+            'name': 'readme',
+            'message': 'Add ReadMe.md?[default value: Yes]',
+            'default': True
+        },
+        {
+            'type': 'confirm',
+            'name': 'issues',
+            'message': 'Allows issues?[default value: NO]',
+            'default': False
+        },
+        {
+            'type': 'confirm',
+            'name': 'wiki',
+            'message': 'Has wiki?[default value: NO]',
+            'default': False
+        },
+        {
+            'type': 'confirm',
+            'name': 'gitignore',
+            'message': 'Add git ignore template?[default value: NO]',
+            'default': False
+        },
+        {
+            'type': 'input',
+            'name': 'gitignoreLanguage',
+            'message': 'Which language? Empty: no gitignore',
+            'validate': GitIgnoreValidator,
+            'when': lambda answers: answers.get('gitignore', True)
+        }
+    ]
 
-    # * use a profile  
+    # * use a profile
     if args.profile:
-        pfolder = os.getenv("PROFILES_STORAGE")
-        pofilePath = os.path.join(pfolder,args.profile+".txt" )
+        pf = os.getenv("PROFILES_STORAGE")
+
         # * Read
-        if os.path.exists(pofilePath):
-            f = open(pofilePath,"r")
-            profileAnswers = f.read()
-            profile = True
+        profiles = {}
+        with open(pf, 'r') as f:
+            profiles = json.load(f)
             f.close()
-        else:
-            print(Fore.RED + f'The profile dosen\'t exist.(CTRL+c to cancel or contiune using normal mode)')
+        
+        profileAnswers = {} 
+        for p in profiles["profiles"]:
+            if p["name"] ==args.profile:
+                profileExist = True
+                profileAnswers = p
+
+        if profileExist == False:
+            print(
+                Fore.RED + f'The profile dosen\'t exist.(contiune using normal mode)')
             print(Style.RESET_ALL)
-        if profile == True:
+
+        if profileExist:
             # * Complete missing answers
-            profileAnswers = ast.literal_eval(profileAnswers)
             i = 0
             answers = {}
             qtoAsk = []
+
             for a in profileAnswers:
-                # * remove the profile name 
-                if a=="pname":
+                # * remove the profile name
+                if a == "name":
                     continue
                 # * copy answers to the answers variable
                 answers[a] = profileAnswers[a]
@@ -314,15 +348,16 @@ if args.new:
                     if a == "gitignoreLanguage" and profileAnswers["gitignore"] == False:
                         continue
                     qtoAsk.append(i)
-                i +=1
+                i += 1
 
             if qtoAsk != []:
                 missingQ = []
-                print(Fore.CYAN + f'Completing missed answers (empty answer in the profile)')
+                print(
+                    Fore.CYAN + f'Completing missed answers (empty answer in the profile)')
                 print(Style.RESET_ALL)
                 for q in qtoAsk:
                     missingQ.append(questions[q])
-                
+
                 missingA = prompt(missingQ, style=style)
                 # * Merge the 2 answers
                 for a in missingA:
@@ -332,10 +367,9 @@ if args.new:
             print(answers)
             print(Style.RESET_ALL)
 
-    if profile == False:
+    if profileExist == False:
         answers = prompt(questions, style=style)
 
-    
     # Create repo on github
     token = os.getenv("TOKEN")
     query_url = os.getenv("URL")
@@ -367,10 +401,9 @@ if args.new:
             "auto_init": answers["readme"]
         }
 
-    # r = requests.post(query_url, headers=headers, data=json.dumps(data))
-    # rsp = r.json()
-    # # print(rsp)
-    # git_url = rsp["clone_url"]
-    # commands = [f'git clone {git_url}']
-    # for c in commands:
-    #     os.system(c)
+    r = requests.post(query_url, headers=headers, data=json.dumps(data))
+    rsp = r.json()
+    git_url = rsp["clone_url"]
+    commands = [f'git clone {git_url}']
+    for c in commands:
+        os.system(c)
