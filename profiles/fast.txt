@@ -1,0 +1,1 @@
+{'pname': 'fast', 'private': True, 'readme': True, 'issues': False, 'wiki': False, 'gitignore': True, 'gitignoreLanguage': ''}

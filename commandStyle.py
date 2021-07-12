@@ -1,6 +1,6 @@
 from PyInquirer import style_from_dict, Token
 
-
+# * Printing style for the questions
 style = style_from_dict({
     Token.Separator: '#00FF00',
     Token.QuestionMark: '#E91E63 bold',
@@ -10,3 +10,5 @@ style = style_from_dict({
     Token.Question: '',
 
 })
+
+

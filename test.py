@@ -1,19 +1,26 @@
-from commandStyle import style
+import argparse
 
+def func1(): pass
+def func2(): pass
+def func3(): pass
 
-# * Argument managment
-
-parser = argparse.ArgumentParser(prog='Create git repo')
-parser.add_argument('--np', nargs='?', help='Create new profile to faster repo creation')
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-l", "--list",
+    dest='funcs', action="append_const", const=func1,
+    help="Create CSV of images", )
+parser.add_argument(
+    "-i", "--interactive",
+    dest='funcs', action="append_const", const=func2,
+    help="Run script in interactive mode",)
+parser.add_argument(
+    "-d", "--dimensions",
+    dest='funcs', action='append_const', const=func3,
+    help="Copy images with incorrect dimensions to new directory")
 args = parser.parse_args()
+if not args.funcs:
+    args.funcs = [func1, func2, func3]
 
-# parser = argparse.ArgumentParser(description='Create new git repo')
-# parser.add_argument('string', metavar='np', type=int, nargs='+',
-#                     help='Create new profile for faster repo creation')
-
-# args = parser.parse_args()
-# print(args.accumulate(args.integers))
-print(args)
-print("----")
-if args.np:
-    print("Creating new profile...")
+for func in args.funcs:
+    print(func)
+    func()
