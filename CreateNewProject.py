@@ -17,6 +17,7 @@ init()
 
 # TODO : ReadME
 # TODO : read path from .env in bat
+# TODO : Add licence 
 
 
 def chekRepoName(rName):

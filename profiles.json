@@ -1,5 +1,13 @@
 {
     "profiles": [
-      
+        {
+            "name": "fast",
+            "private": true,
+            "readme": true,
+            "issues": false,
+            "wiki": false,
+            "gitignore": true,
+            "gitignoreLanguage": ""
+        }
     ]
 }

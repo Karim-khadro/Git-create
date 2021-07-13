@@ -1,0 +1,4 @@
+requests==2.24.0
+colorama==0.4.4
+PyInquirer==1.0.3
+python-dotenv==0.18.0
