@@ -1,9 +1,9 @@
 from PyInquirer import prompt
 from dotenv import load_dotenv
 from commandStyle import style
-from colorama import Fore, Back, Style, init
+from colorama import Fore, Style
 
-from QuestionValidators import GitIgnoreValidator,profileNameValidator
+from QuestionValidators import questions,profileNameValidator
 
 import os
 import json
@@ -13,56 +13,18 @@ load_dotenv()
 
 # * Profiles managment
 def createProfile():
-    profileQuestions = [
-        {
+    questions.insert(0, {
             'type': 'input',
             'name': 'name',
             'message': 'Profile name?',
             'validate': profileNameValidator
-        },
-        {
-            'type': 'confirm',
-            'name': 'private',
-            'message': 'Private repo?',
-            'default': ""
-        },
-        {
-            'type': 'confirm',
-            'name': 'readme',
-            'message': 'Add ReadMe.md?',
-            'default': ""
-        },
-        {
-            'type': 'confirm',
-            'name': 'issues',
-            'message': 'Allows issues?',
-            'default': ""
-        },
-        {
-            'type': 'confirm',
-            'name': 'wiki',
-            'message': 'Has wiki?',
-            'default': ""
-        },
-        {
-            'type': 'confirm',
-            'name': 'gitignore',
-            'message': 'Add git ignore template?[default value: NO]',
-            'default': ""
-        },
-        {
-            'type': 'input',
-            'name': 'gitignoreLanguage',
-            'message': 'Which language? Empty: no gitignore',
-            'validate': GitIgnoreValidator,
-            'when': lambda answers: answers.get('gitignore', True)
-        }
-    ]
+        })
+   
     print("Creating new profile...\n")
     print(Fore.CYAN + 'NOTES: -if the answer is empty the question will be asked when using the profile\n       -if wrong answer, the answer will be empty')
     print(Style.RESET_ALL)
 
-    answers = prompt(profileQuestions, style=style)
+    answers = prompt(questions, style=style)
 
     # * Recap of the answers
     print(Fore.CYAN +

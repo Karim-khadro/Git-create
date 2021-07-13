@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 from commandStyle import style
 from colorama import Fore, Style, init
 from profilesManager import manageProfiles
-from QuestionValidators import GitIgnoreValidator
+from QuestionValidators import questions
+
 
 import sys
 import os
@@ -15,7 +16,6 @@ import argparse
 load_dotenv()
 init()
 
-# TODO : ReadME
 # TODO : read path from .env in bat
 # TODO : Add licence 
 
@@ -68,45 +68,7 @@ if args.new:
     chekRepoName(folderName)
     profileExist = False
     
-    questions = [
-        {
-            'type': 'confirm',
-            'name': 'private',
-            'message': 'Private repo?[default value: NO]',
-            'default': False
-        },
-        {
-            'type': 'confirm',
-            'name': 'readme',
-            'message': 'Add ReadMe.md?[default value: Yes]',
-            'default': True
-        },
-        {
-            'type': 'confirm',
-            'name': 'issues',
-            'message': 'Allows issues?[default value: NO]',
-            'default': False
-        },
-        {
-            'type': 'confirm',
-            'name': 'wiki',
-            'message': 'Has wiki?[default value: NO]',
-            'default': False
-        },
-        {
-            'type': 'confirm',
-            'name': 'gitignore',
-            'message': 'Add git ignore template?[default value: NO]',
-            'default': False
-        },
-        {
-            'type': 'input',
-            'name': 'gitignoreLanguage',
-            'message': 'Which language? Empty: no gitignore',
-            'validate': GitIgnoreValidator,
-            'when': lambda answers: answers.get('gitignore', True)
-        }
-    ]
+    
 
     # * use a profile
     if args.profile:
@@ -183,6 +145,7 @@ if args.new:
             "private": answers["private"],
             "has_issues": answers["issues"],
             "has_wiki": answers["wiki"],
+            "license_template": answers["license"],
             "gitignore_template": language,
             "auto_init": answers["readme"]
         }
@@ -194,6 +157,7 @@ if args.new:
             "private": answers["private"],
             "has_issues": answers["issues"],
             "has_wiki": answers["wiki"],
+            "license_template": answers["license"],
             "gitignore_template": False,
             "auto_init": answers["readme"]
         }

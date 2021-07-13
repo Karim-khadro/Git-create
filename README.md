@@ -26,7 +26,7 @@ cd Git-create
 ```
 2. Add your github token  to the .env
 3. Add the Git-create repo path to the .env
-4. Add the creat.bat to the system path
+4. Add the create.bat to the system path
 
 ## License
 
