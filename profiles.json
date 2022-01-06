@@ -6,8 +6,8 @@
             "readme": true,
             "issues": false,
             "wiki": false,
-            "gitignore": true,
-            "gitignoreLanguage": ""
+            "license": "",
+            "gitignore": false
         }
     ]
 }

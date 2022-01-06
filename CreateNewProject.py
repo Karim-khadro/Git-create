@@ -1,12 +1,10 @@
 from __future__ import print_function, unicode_literals
-from PyInquirer import  prompt
 from dotenv import load_dotenv
-from commandStyle import style
 from colorama import Fore, Style, init
 from profilesManager import manageProfiles
 from QuestionValidators import questions
-
-
+from PyInquirer import  prompt
+from commandStyle import style
 import sys
 import os
 import requests
@@ -15,10 +13,6 @@ import argparse
 
 load_dotenv()
 init()
-
-# TODO : read path from .env in bat
-# TODO : Add licence 
-
 
 def chekRepoName(rName):
     if os.path.exists(rName):
